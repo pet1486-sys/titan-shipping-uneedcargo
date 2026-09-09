@@ -2,9 +2,12 @@ name: Fetch Cargo Auto Daily
 
 on:
   schedule:
-    # รันอัตโนมัติ 3 เวลา (เวลาไทย): 08:00 น., 12:00 น., 18:00 น.
     - cron: '0 1,5,11 * * *'
-  workflow_dispatch: # ปุ่มสำหรับกดรันเองแบบ Manual จากหน้าเว็บ
+  workflow_dispatch:
+
+# 📌 เพิ่มสิทธิ์ให้ GitHub Actions สามารถเขียนไฟล์กลับเข้า Repository ได้
+permissions:
+  contents: write
 
 jobs:
   run-scraper:

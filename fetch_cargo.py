@@ -3,24 +3,33 @@ import os
 from playwright.async_api import async_playwright
 import pandas as pd
 
-# ดึงค่าจาก GitHub Secrets
 USERNAME = os.getenv("CARGO_USERNAME", "htninja")
 PASSWORD = os.getenv("CARGO_PASSWORD", "spv123456")
 
 async def function_run():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
+        # เพิ่ม User-Agent ให้เหมือนเบราว์เซอร์จริงเพื่อลดการโดนหน่วง/บล็อก
+        context = await browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
         page = await context.new_page()
 
         print("กำลังเข้าสู่ระบบ...")
-        await page.goto("https://www.uneedcargo.com/login", wait_until="domcontentloaded")
-        
+        try:
+            # 📌 ขยายเวลา Timeout เป็น 90000ms (90 วินาที)
+            await page.goto("https://www.uneedcargo.com/login", wait_until="domcontentloaded", timeout=90000)
+        except Exception as e:
+            print(f"เกิดข้อผิดพลาดในการโหลดหน้า Login: {e}")
+            await browser.close()
+            return
+
+        # กรอกข้อมูลล็อกอิน
         await page.fill('input[name="username"]', USERNAME)
         await page.fill('input[name="password"]', PASSWORD)
         await page.click('button[type="submit"]')
         
-        await page.wait_for_timeout(4000)
+        await page.wait_for_timeout(5000)
 
         all_data = []
 
@@ -29,8 +38,8 @@ async def function_run():
             print(f"กำลังดึงข้อมูลหน้า {page_num}...")
             
             try:
-                await page.goto(target_url, wait_until="domcontentloaded", timeout=60000)
-                await page.wait_for_selector("table", timeout=15000)
+                await page.goto(target_url, wait_until="domcontentloaded", timeout=90000)
+                await page.wait_for_selector("table", timeout=20000)
                 await page.wait_for_timeout(2000)
             except Exception as e:
                 print(f"เกิดข้อผิดพลาดในการโหลดหน้า {page_num}: {e}")
@@ -63,7 +72,6 @@ async def function_run():
                         "หมายเหตุ": get_val(15),
                     })
 
-        # บันทึกทับไฟล์เดียวตลอด
         if all_data:
             df = pd.DataFrame(all_data)
             filename = "cargo_packages_p1-5.xlsx"
