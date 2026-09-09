@@ -12,17 +12,14 @@
         /* Header Bar */
         .navbar { background-color: #ff6600; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .navbar .brand { font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
-        .nav-actions { display: flex; gap: 6px; }
         .btn-top-action { background-color: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
         .btn-top-action:hover { background-color: #15803d; }
-        .btn-save-json { background-color: #2563eb; }
-        .btn-save-json:hover { background-color: #1d4ed8; }
 
-        /* Status Bar */
-        .status-bar { background: #fff3eb; border-bottom: 1px solid #ffd8be; padding: 6px 12px; font-size: 11.5px; color: #d97706; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        /* Sticky Status Bar */
+        .status-bar { position: sticky; top: 0; z-index: 1000; background: #fff3eb; border-bottom: 1px solid #ffd8be; padding: 6px 12px; font-size: 11.5px; color: #d97706; font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* Sticky Navigation Bar */
-        .sticky-nav { position: sticky; top: 0; z-index: 999; background: #ffffff; padding: 6px; display: flex; gap: 4px; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); width: 100%; }
+        /* Navigation Bar */
+        .sticky-nav { background: #ffffff; padding: 6px; display: flex; gap: 4px; border-bottom: 1px solid #e2e8f0; width: 100%; }
         .nav-btn { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; padding: 6px 2px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-btn:hover { background: #ff6600; color: white; border-color: #ff6600; }
         .nav-btn-toggle { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
@@ -79,14 +76,16 @@
         summary:hover { text-decoration: underline; }
         .dropdown-content { padding: 4px 0 2px 0; color: #555; font-size: 11.5px; }
 
-        .price-dropdown summary { color: #10b981; }
-        .price-row { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
-        .price-tag { color: #10b981; font-weight: bold; font-size: 15px; }
+        .extra-dropdown summary { color: #64748b; font-size: 11px; }
+        .price-tag { color: #10b981; font-weight: bold; font-size: 14px; }
 
-        /* โซนสินค้าดร็อปดาวน์ + รายการเรียงแถวลงมา */
+        /* โซนสินค้า + ปุ่มบันทึกในแต่ละการ์ด */
         .item-note-box { margin-top: 4px; }
-        .sku-select-input { width: 100%; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11.5px; font-family: inherit; outline: none; background: #fafafa; margin-bottom: 4px; }
+        .sku-input-group { display: flex; gap: 4px; margin-bottom: 4px; }
+        .sku-select-input { flex: 1; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11.5px; font-family: inherit; outline: none; background: #fafafa; }
         .sku-select-input:focus { border-color: #ff6600; background: #ffffff; }
+        .btn-save-card { background-color: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+        .btn-save-card:hover { background-color: #1d4ed8; }
         
         .selected-sku-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
         .sku-item-card { display: flex; justify-content: space-between; align-items: center; border: 1px solid #93c5fd; background: #f0f9ff; padding: 5px 8px; border-radius: 10px; }
@@ -126,19 +125,16 @@
 
     <div class="navbar" id="topNav">
         <div class="brand">u.need.cargo</div>
-        <div class="nav-actions">
-            <button class="btn-top-action btn-save-json" onclick="saveSelectedSkusToGitHub()">บันทึกข้อมูลสินค้า</button>
-            <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
-        </div>
+        <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
     </div>
 
-    <!-- แถบสถานะการดึงข้อมูลอัตโนมัติ -->
+    <!-- แถบสถานะการบันทึก + ดึงข้อมูล ตรึงบนสุด -->
     <div class="status-bar" id="statusBar">
-        <span id="statusText">กำลังโหลดข้อมูลพัสดุและ SKU อัตโนมัติ...</span>
+        <span id="statusText">บันทึกข้อมูลล่าสุดแล้ว</span>
         <button onclick="autoFetchData()" style="background:none; border:none; color:#ff6600; font-weight:bold; cursor:pointer;">รีเฟรช</button>
     </div>
 
-    <!-- แถบเมนูปุ่มลัด ตรึงด้านบน (ไม่มีสโครลซ้ายขวา) -->
+    <!-- แถบเมนูปุ่มลัด -->
     <div class="sticky-nav">
         <button class="nav-btn" onclick="scrollToSection('topNav')">บนสุด</button>
         <button class="nav-btn" onclick="scrollToSection('quickBadgesSection')">กริดดูเร็ว</button>
@@ -171,8 +167,7 @@
                         <th>ถึงไทย</th>
                         <th>ถึงร้าน</th>
                         <th style="min-width: 250px;">รายการสินค้า (เลือกจาก SKU)</th>
-                        <th>รายละเอียด</th>
-                        <th>ราคาค่าขนส่ง</th>
+                        <th>ข้อมูลเพิ่มเติม</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -196,8 +191,7 @@
                                     <th>ถึงไทย</th>
                                     <th>ถึงร้าน</th>
                                     <th style="min-width: 250px;">รายการสินค้า</th>
-                                    <th>รายละเอียด</th>
-                                    <th>ราคาค่าขนส่ง</th>
+                                    <th>ข้อมูลเพิ่มเติม</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -241,12 +235,10 @@
                     globalSelectedSkusMap = JSON.parse(localStorage.getItem('cargo_selected_skus') || '{}');
                 }
             } catch (e) {
-                console.log("ไม่พบไฟล์ cargo_selected_skus.json ดึงจาก Local Storage แทน");
                 globalSelectedSkusMap = JSON.parse(localStorage.getItem('cargo_selected_skus') || '{}');
             }
         }
 
-        /* ปุ่มกดบันทึกข้อมูลสินค้าทั้งหมดขึ้น GitHub แบบครั้งเดียว */
         async function saveSelectedSkusToGitHub() {
             localStorage.setItem('cargo_selected_skus', JSON.stringify(globalSelectedSkusMap));
             
@@ -263,7 +255,7 @@
             }
 
             const statusText = document.getElementById('statusText');
-            statusText.innerText = 'กำลังบันทึกข้อมูลสินค้าลง GitHub...';
+            statusText.innerText = '⏳ กำลังบันทึกข้อมูลสินค้าลง GitHub...';
 
             try {
                 let sha = "";
@@ -298,16 +290,14 @@
                 });
 
                 if (putRes.ok) {
-                    alert("บันทึกข้อมูลสินค้าขึ้น GitHub เรียบร้อยแล้ว!");
-                    statusText.innerText = 'บันทึกและอัปเดตไฟล์ขึ้น GitHub เรียบร้อยแล้ว!';
+                    statusText.innerText = '✅ บันทึกข้อมูลเรียบร้อยแล้ว';
                 } else {
                     const err = await putRes.json();
-                    alert(`เกิดข้อผิดพลาดในการบันทึกขึ้น GitHub: ${err.message}`);
-                    statusText.innerText = `เกิดข้อผิดพลาดในการบันทึกขึ้น GitHub: ${err.message}`;
+                    statusText.innerText = `❌ บันทึกไม่สำเร็จ: ${err.message}`;
                 }
             } catch (e) {
                 console.error("Save error:", e);
-                statusText.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ GitHub';
+                statusText.innerText = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ GitHub';
             }
         }
 
@@ -330,7 +320,7 @@
                         if (editToken.trim()) {
                             localStorage.setItem('gh_pat_token', editToken.trim());
                             token = editToken.trim();
-                            alert("อัปเดต Token ใหม่เรียบร้อยแล้ว! กรุณากดปุ่มสั่งรันอีกครั้งครับ");
+                            alert("อัปเดต Token ใหม่เรียบร้อยแล้ว!");
                         } else {
                             localStorage.removeItem('gh_pat_token');
                             alert("ลบ Token ออกเรียบร้อยแล้ว");
@@ -341,7 +331,7 @@
             }
 
             const statusText = document.getElementById('statusText');
-            statusText.innerText = 'กำลังส่งคำสั่งรันสคริปต์ Python บน GitHub Actions...';
+            statusText.innerText = '⏳ กำลังส่งคำสั่งรันสคริปต์ Python...';
 
             try {
                 const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/actions/workflows/fetch_cargo.yml/dispatches`, {
@@ -355,12 +345,12 @@
                 });
 
                 if (res.ok) {
-                    alert('ส่งคำสั่งดึงข้อมูลสำเร็จ! สคริปต์กำลังรันใน Background บน GitHub (ใช้เวลาประมาณ 1-2 นาที แนะนำให้กดรีเฟรชหน้าเว็บภายหลังครับ)');
-                    statusText.innerText = 'สคริปต์กำลังทำงานบน GitHub... รอประมวลผลประมาณ 1-2 นาที';
+                    alert('ส่งคำสั่งสำเร็จ! สคริปต์กำลังรันใน Background (ใช้เวลาประมาณ 1-2 นาที แนะนำให้กดรีเฟรชภายหลัง)');
+                    statusText.innerText = '⏳ สคริปต์กำลังทำงานบน GitHub...';
                 } else {
                     const err = await res.json();
                     alert(`ไม่สามารถส่งคำสั่งได้ (${res.status}): ${err.message}`);
-                    statusText.innerText = 'เกิดข้อผิดพลาดในการสั่งรันสคริปต์';
+                    statusText.innerText = '❌ เกิดข้อผิดพลาดในการสั่งรันสคริปต์';
                 }
             } catch (e) {
                 alert(`เกิดข้อผิดพลาดทางเครือข่าย: ${e.message}`);
@@ -391,7 +381,7 @@
 
         async function autoFetchData() {
             const statusText = document.getElementById('statusText');
-            statusText.innerText = 'กำลังโหลดข้อมูลพัสดุและ SKU อัตโนมัติ...';
+            statusText.innerText = '⏳ กำลังโหลดข้อมูลอัตโนมัติ...';
 
             await fetchGitHubSkuJson();
 
@@ -413,12 +403,12 @@
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     rawData = XLSX.utils.sheet_to_json(worksheet);
                     renderData(rawData);
-                    statusText.innerText = `โหลดข้อมูลพัสดุสำเร็จ (${rawData.length} รายการ)`;
+                    statusText.innerText = `✅ โหลดข้อมูลสำเร็จ (${rawData.length} รายการ)`;
                 } else {
-                    statusText.innerText = 'ไม่พบไฟล์ cargo_packages_p1-5.xlsx ในระบบ';
+                    statusText.innerText = '⚠️ ไม่พบไฟล์ cargo_packages_p1-5.xlsx ในระบบ';
                 }
             } catch (e) {
-                statusText.innerText = 'เกิดข้อผิดพลาดในการดึงไฟล์พัสดุอัตโนมัติ';
+                statusText.innerText = '❌ เกิดข้อผิดพลาดในการดึงไฟล์พัสดุอัตโนมัติ';
             }
         }
 
@@ -479,25 +469,25 @@
             return globalSelectedSkusMap[trackingFull] || [];
         }
 
-        /* เลือกเพิ่ม SKU ในเครื่องชั่วคราวก่อน (ยังไม่อัปขึ้น Git) */
-        function addSkuToTrack(trackingFull, skuValue) {
+        function addSkuToTrack(trackingFull, inputElement) {
+            const skuValue = inputElement.value;
             if (!skuValue || !skuValue.trim()) return;
             if (!globalSelectedSkusMap[trackingFull]) globalSelectedSkusMap[trackingFull] = [];
             
             if (!globalSelectedSkusMap[trackingFull].includes(skuValue.trim())) {
                 globalSelectedSkusMap[trackingFull].push(skuValue.trim());
-                localStorage.setItem('cargo_selected_skus', JSON.stringify(globalSelectedSkusMap));
+                inputElement.value = '';
+                saveSelectedSkusToGitHub();
+                renderData(rawData);
             }
-            renderData(rawData);
         }
 
-        /* ลบ SKU ในเครื่องชั่วคราวก่อน (ยังไม่อัปขึ้น Git) */
         function removeSkuFromTrack(trackingFull, index) {
             if (globalSelectedSkusMap[trackingFull]) {
                 globalSelectedSkusMap[trackingFull].splice(index, 1);
-                localStorage.setItem('cargo_selected_skus', JSON.stringify(globalSelectedSkusMap));
+                saveSelectedSkusToGitHub();
+                renderData(rawData);
             }
-            renderData(rawData);
         }
 
         function scrollToSection(elementId) {
@@ -705,25 +695,20 @@
                         <details class="sku-details-dropdown" ${openAttr}>
                             <summary>สินค้าในออเดอร์ (${selectedSkus.length})</summary>
                             <div class="dropdown-content">
-                                <input list="skuDatalist" class="sku-select-input" placeholder="+ เลือก/พิมพ์ค้นหา SKU..." onchange="addSkuToTrack('${trackingObj.full}', this.value); this.value='';" />
+                                <div class="sku-input-group">
+                                    <input list="skuDatalist" id="sku-input-pc-${index}" class="sku-select-input" placeholder="+ เลือก/พิมพ์ค้นหา SKU..." />
+                                    <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', document.getElementById('sku-input-pc-${index}'))">บันทึก</button>
+                                </div>
                                 <div class="selected-sku-list">${skuCardsHtml}</div>
                             </div>
                         </details>
                     </td>
                     <td>
-                        <details>
-                            <summary>ดูรายละเอียด</summary>
+                        <details class="extra-dropdown">
+                            <summary>ข้อมูลเพิ่มเติม</summary>
                             <div class="dropdown-content">
-                                - ประเภท : ${productType}<br>
-                                - จำนวน : ${qty}
-                            </div>
-                        </details>
-                    </td>
-                    <td>
-                        <details class="price-dropdown">
-                            <summary>ดูราคา</summary>
-                            <div class="dropdown-content">
-                                <span class="price-tag">${price}</span>
+                                <b>รายละเอียด:</b> ประเภท ${productType} / จำนวน ${qty}<br>
+                                <b>ค่าขนส่ง:</b> <span class="price-tag">${price}</span>
                             </div>
                         </details>
                     </td>
@@ -746,25 +731,20 @@
                         <details class="sku-details-dropdown" ${openAttr}>
                             <summary>สินค้าในออเดอร์นี้ (${selectedSkus.length})</summary>
                             <div class="dropdown-content">
-                                <input list="skuDatalist" class="sku-select-input" placeholder="+ พิมพ์เพื่อค้นหาและเลือก SKU..." onchange="addSkuToTrack('${trackingObj.full}', this.value); this.value='';" />
+                                <div class="sku-input-group">
+                                    <input list="skuDatalist" id="sku-input-mobile-${index}" class="sku-select-input" placeholder="+ พิมพ์เพื่อค้นหาและเลือก SKU..." />
+                                    <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', document.getElementById('sku-input-mobile-${index}'))">บันทึก</button>
+                                </div>
                                 <div class="selected-sku-list">${skuCardsHtml}</div>
                             </div>
                         </details>
                     </div>
 
-                    <details>
-                        <summary>รายละเอียดสินค้าจากระบบ</summary>
+                    <details class="extra-dropdown">
+                        <summary>ข้อมูลเพิ่มเติม (รายละเอียด & ราคา)</summary>
                         <div class="dropdown-content">
-                            • ประเภท : ${productType}<br>
-                            • จำนวน : ${qty}
-                        </div>
-                    </details>
-
-                    <details class="price-dropdown">
-                        <summary>ราคาค่าขนส่ง</summary>
-                        <div class="dropdown-content price-row">
-                            <span style="color:#666; font-size:11.5px;">ราคารวม :</span>
-                            <span class="price-tag">${price}</span>
+                            • ประเภท: ${productType} | จำนวน: ${qty}<br>
+                            • ค่าขนส่ง: <span class="price-tag">${price}</span>
                         </div>
                     </details>
                 `;
