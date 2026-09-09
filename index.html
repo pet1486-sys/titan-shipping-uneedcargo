@@ -27,7 +27,7 @@
         .quick-badges-section { background: white; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
         .quick-badges-title { font-size: 11.5px; font-weight: bold; color: #475569; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
         .badge-count-tag { background: #ff6600; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; }
-        .quick-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .quick-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: start; }
         .badge-item { background: #fff3eb; border: 1px solid #ffd8be; color: #d97706; font-size: 10.5px; font-weight: bold; padding: 6px 2px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .badge-item:hover { background: #ff6600; color: white; border-color: #ff6600; }
 
@@ -215,7 +215,7 @@
         let rawData = [];
         let skuProducts = [];
         let globalSelectedSkusMap = {};
-        let isAllSkuOpen = false;
+        let isAllSkuOpen = true; // เปิดกางรายการสินค้าเป็นค่าเริ่มต้น
         let isSortFastestFirst = false;
         let tomSelectInstances = {};
 
@@ -699,7 +699,7 @@
                         </details>
                     </td>
                     <td>
-                        <details class="extra-dropdown">
+                        <details class="extra-dropdown" open>
                             <summary>ข้อมูลเพิ่มเติม</summary>
                             <div class="dropdown-content">
                                 <b>รายละเอียด:</b> ประเภท ${productType} / จำนวน ${qty}<br>
@@ -735,7 +735,7 @@
                         </details>
                     </div>
 
-                    <details class="extra-dropdown">
+                    <details class="extra-dropdown" open>
                         <summary>ข้อมูลเพิ่มเติม (รายละเอียด & ราคา)</summary>
                         <div class="dropdown-content">
                             • ประเภท: ${productType} | จำนวน: ${qty}<br>
@@ -827,10 +827,37 @@
                 processedData.sort((a, b) => {
                     const dateA = getCalculatedStoreDate(a);
                     const dateB = getCalculatedStoreDate(b);
-                    if (!dateA && !dateB) return 0;
-                    if (!dateA) return 1;
-                    if (!dateB) return -1;
-                    return dateA.getTime() - dateB.getTime();
+
+                    const timeA = dateA ? dateA.getTime() : Infinity;
+                    const timeB = dateB ? dateB.getTime() : Infinity;
+
+                    // 1. เรียงตามวันที่ถึงร้าน (เร็วไปช้า)
+                    if (timeA !== timeB) {
+                        return timeA - timeB;
+                    }
+
+                    // 2. แต่วันที่ถึงร้านเท่ากัน ให้ดึงเลขพัสดุหลัก (Base ID) มาจัดกลุ่ม
+                    const trackA = String(a['รหัสพัสดุ'] || a['Tracking'] || '').trim();
+                    const trackB = String(b['รหัสพัสดุ'] || b['Tracking'] || '').trim();
+
+                    const baseA = trackA.split('#')[0].trim();
+                    const baseB = trackB.split('#')[0].trim();
+
+                    // ถ้าเป็นกลุ่มเลขพัสดุหลักเดียวกัน (เช่น 1117 กับ 1117 #2)
+                    if (baseA === baseB) {
+                        const hasHashA = trackA.includes('#');
+                        const hasHashB = trackB.includes('#');
+
+                        // ตัวไม่มี # (1117) ต้องขึ้นก่อนตัวมี # (1117 #2) เสมอ
+                        if (!hasHashA && hasHashB) return -1;
+                        if (hasHashA && !hasHashB) return 1;
+
+                        // ถ้ามี # ทั้งคู่ ให้เรียง #2, #3 ตามลำดับ
+                        return trackA.localeCompare(trackB, undefined, { numeric: true, sensitivity: 'base' });
+                    }
+
+                    // 3. ถ้าคนละเลขหลัก ให้เรียงตามตัวเลขหลัก (เพื่อให้กลุ่ม 1117 อยู่ต่อกัน ก่อนไปกลุ่มอื่น)
+                    return baseA.localeCompare(baseB, undefined, { numeric: true, sensitivity: 'base' });
                 });
             }
 
