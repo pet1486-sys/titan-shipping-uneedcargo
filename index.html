@@ -15,42 +15,47 @@
         .btn-top-action { background-color: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
         .btn-top-action:hover { background-color: #15803d; }
 
-        /* Sticky Status Bar */
-        .status-bar { position: sticky; top: 0; z-index: 1000; background: #fff3eb; border-bottom: 1px solid #ffd8be; padding: 6px 12px; font-size: 11.5px; color: #d97706; font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* Quick Badges Section (ย้ายมาไว้ก่อน Sticky Header Group) */
+        .quick-badges-section { background: white; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+        .quick-badges-title { font-size: 11.5px; font-weight: bold; color: #475569; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .badge-count-tag { background: #ff6600; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; }
+        .quick-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .badge-item { background: #fff3eb; border: 1px solid #ffd8be; color: #d97706; font-size: 10.5px; font-weight: bold; padding: 6px 2px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge-item:hover { background: #ff6600; color: white; border-color: #ff6600; }
 
-        /* Navigation Bar */
+        /* Sticky Container (ตรึงเฉพาะ 2 แถบนี้) */
+        .sticky-header-group { position: sticky; top: 0; z-index: 1000; background: #f5f5f7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* 1. Status Bar */
+        .status-bar { background: #fff3eb; border-bottom: 1px solid #ffd8be; padding: 6px 12px; font-size: 11.5px; color: #d97706; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 2. Sticky Nav */
         .sticky-nav { background: #ffffff; padding: 6px; display: flex; gap: 4px; border-bottom: 1px solid #e2e8f0; width: 100%; }
         .nav-btn { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; padding: 6px 2px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-btn:hover { background: #ff6600; color: white; border-color: #ff6600; }
         .nav-btn-toggle { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
 
-        /* Search Bar */
-        .action-container { padding: 12px; background: white; margin-bottom: 12px; border-bottom: 1px solid #e0e0e0; }
-        .search-box { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 8px; font-size: 13px; outline: none; }
+        /* Search & Filter Bar */
+        .action-container { padding: 8px 12px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; gap: 6px; flex-wrap: wrap; }
+        .search-box { flex: 1; min-width: 150px; padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 12.5px; outline: none; }
         .search-box:focus { border-color: #ff6600; }
-        .btn-search { width: 100%; background-color: #ff6600; color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
-
-        /* Quick Badges Section */
-        .quick-badges-section { background: white; padding: 12px 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; scroll-margin-top: 60px; }
-        .quick-badges-title { font-size: 12.5px; font-weight: bold; color: #475569; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .badge-count-tag { background: #ff6600; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10.5px; }
-        
-        .quick-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-        .badge-item { background: #fff3eb; border: 1px solid #ffd8be; color: #d97706; font-size: 11px; font-weight: bold; padding: 8px 2px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .badge-item:hover { background: #ff6600; color: white; border-color: #ff6600; }
+        .btn-search { background-color: #ff6600; color: white; border: none; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .btn-sort { background-color: #0284c7; color: white; border: none; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap; transition: 0.2s; width: 100%; text-align: center; }
+        .btn-sort:hover { background-color: #0369a1; }
+        .btn-sort.active { background-color: #0f172a; }
 
         /* Content Area */
-        .content-area { padding: 0 10px; max-width: 1200px; margin: 0 auto; }
+        .content-area { padding: 12px 10px 0 10px; max-width: 1200px; margin: 0 auto; }
 
         /* PC Layout: Table */
-        .desktop-table-wrapper { background: white; border-radius: 8px; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; scroll-margin-top: 60px; }
+        .desktop-table-wrapper { background: white; border-radius: 8px; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; scroll-margin-top: 80px; }
         .desktop-table { width: 100%; border-collapse: collapse; min-width: 800px; }
         .desktop-table th, .desktop-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
         .desktop-table th { background-color: #fafafa; color: #666; font-weight: 600; }
 
         /* Mobile Layout: Cards */
-        .mobile-cards { display: none; scroll-margin-top: 60px; }
-        .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eaeaea; font-size: 12.5px; line-height: 1.5; transition: border-color 0.3s; scroll-margin-top: 70px; }
+        .mobile-cards { display: none; scroll-margin-top: 80px; }
+        .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eaeaea; font-size: 12.5px; line-height: 1.5; transition: border-color 0.3s; scroll-margin-top: 90px; }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
         
         .tracking-box { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -82,7 +87,9 @@
         /* โซนสินค้า + ปุ่มบันทึกในแต่ละการ์ด */
         .item-note-box { margin-top: 4px; }
         .sku-input-group { display: flex; gap: 4px; margin-bottom: 4px; }
-        .sku-select-input { flex: 1; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11.5px; font-family: inherit; outline: none; background: #fafafa; }
+        
+        /* ปรับแต่งสำหรับ iOS รองรับ Dropdown */
+        .sku-select-input { flex: 1; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11.5px; font-family: inherit; outline: none; background: #fafafa; -webkit-appearance: none; appearance: none; }
         .sku-select-input:focus { border-color: #ff6600; background: #ffffff; }
         .btn-save-card { background-color: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s; }
         .btn-save-card:hover { background-color: #1d4ed8; }
@@ -104,7 +111,7 @@
         .completed-container { padding: 10px; background-color: #f8fafc; }
 
         /* Modal แสดงเลขเต็ม */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 18px; border-radius: 10px; width: 90%; max-width: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); text-align: center; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .modal-header h3 { font-size: 14px; color: #333; }
@@ -120,7 +127,6 @@
 </head>
 <body>
 
-    <!-- Datalist สำหรับค้นหาชื่อ SKU -->
     <datalist id="skuDatalist"></datalist>
 
     <div class="navbar" id="topNav">
@@ -128,35 +134,38 @@
         <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
     </div>
 
-    <!-- แถบสถานะการบันทึก + ดึงข้อมูล ตรึงบนสุด -->
-    <div class="status-bar" id="statusBar">
-        <span id="statusText">บันทึกข้อมูลล่าสุดแล้ว</span>
-        <button onclick="autoFetchData()" style="background:none; border:none; color:#ff6600; font-weight:bold; cursor:pointer;">รีเฟรช</button>
+    <!-- 1. Quick Badges Section (ย้ายมาไว้ก่อน Sticky Header) -->
+    <div class="quick-badges-section" id="quickBadgesSection" style="display: none;">
+        <div class="quick-badges-title">
+            <span>พัสดุที่ยังไม่ถึงร้าน</span>
+            <span class="badge-count-tag" id="pendingCountTag">0 กล่อง</span>
+        </div>
+        <div class="quick-badges-grid" id="quickBadgesGrid"></div>
     </div>
 
-    <!-- แถบเมนูปุ่มลัด -->
-    <div class="sticky-nav">
-        <button class="nav-btn" onclick="scrollToSection('topNav')">บนสุด</button>
-        <button class="nav-btn" onclick="scrollToSection('quickBadgesSection')">กริดดูเร็ว</button>
-        <button class="nav-btn" onclick="scrollToSection('mobileCards')">รายการการ์ด</button>
-        <button class="nav-btn nav-btn-toggle" onclick="toggleAllSkuDetails()">ซ่อน/แสดงสินค้า</button>
+    <!-- 2. Sticky Header Group -->
+    <div class="sticky-header-group" id="stickyGroup">
+        <div class="status-bar" id="statusBar">
+            <span id="statusText">บันทึกข้อมูลล่าสุดแล้ว</span>
+            <button onclick="autoFetchData()" style="background:none; border:none; color:#ff6600; font-weight:bold; cursor:pointer;">รีเฟรช</button>
+        </div>
+
+        <div class="sticky-nav">
+            <button class="nav-btn" onclick="scrollToSection('topNav')">บนสุด</button>
+            <button class="nav-btn" onclick="scrollToSection('quickBadgesSection')">กริดดูเร็ว</button>
+            <button class="nav-btn" onclick="scrollToSection('mobileCards')">รายการการ์ด</button>
+            <button class="nav-btn nav-btn-toggle" onclick="toggleAllSkuDetails()">ซ่อน/แสดงสินค้า</button>
+        </div>
     </div>
 
+    <!-- Search & Filter Bar -->
     <div class="action-container">
-        <input type="text" id="searchInput" class="search-box" placeholder="ค้นหารหัสพัสดุ / สินค้าที่เลือกไว้...">
+        <input type="text" id="searchInput" class="search-box" placeholder="ค้นหารหัสพัสดุ / สินค้าที่เลือกไว้..." onkeyup="if(event.key==='Enter') applyFilter()">
         <button class="btn-search" onclick="applyFilter()">ค้นหา</button>
+        <button class="btn-sort" id="sortArrivalBtn" onclick="toggleArrivalSort()">ดูสินค้าถึงร้าน</button>
     </div>
 
     <div class="content-area">
-        <!-- Quick Badges Section -->
-        <div class="quick-badges-section" id="quickBadgesSection" style="display: none;">
-            <div class="quick-badges-title">
-                <span>พัสดุที่ยังไม่ถึงร้าน</span>
-                <span class="badge-count-tag" id="pendingCountTag">0 กล่อง</span>
-            </div>
-            <div class="quick-badges-grid" id="quickBadgesGrid"></div>
-        </div>
-
         <!-- Desktop Layout -->
         <div class="desktop-table-wrapper" id="desktopSection">
             <table class="desktop-table" id="pcTable">
@@ -225,6 +234,10 @@
         let skuProducts = [];
         let globalSelectedSkusMap = {};
         let isAllSkuOpen = false;
+        let isSortFastestFirst = false;
+
+        // ตรวจสอบอุปกรณ์ว่าเป็น iOS หรือไม่
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         async function fetchGitHubSkuJson() {
             try {
@@ -402,7 +415,7 @@
                     const workbook = XLSX.read(new Uint8Array(cargoBuf), { type: 'array' });
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     rawData = XLSX.utils.sheet_to_json(worksheet);
-                    renderData(rawData);
+                    applyFilter();
                     statusText.innerText = `✅ โหลดข้อมูลสำเร็จ (${rawData.length} รายการ)`;
                 } else {
                     statusText.innerText = '⚠️ ไม่พบไฟล์ cargo_packages_p1-5.xlsx ในระบบ';
@@ -446,6 +459,11 @@
                 opt.value = name;
                 datalist.appendChild(opt);
             });
+            
+            // หากเป็น iOS รีเฟรชอินพุต SKU ใหม่เพื่อให้รองรับตัวเลือก
+            if (isIOS) {
+                applyFilter();
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -465,6 +483,19 @@
             });
         }
 
+        function toggleArrivalSort() {
+            isSortFastestFirst = !isSortFastestFirst;
+            const btn = document.getElementById('sortArrivalBtn');
+            if (isSortFastestFirst) {
+                btn.classList.add('active');
+                btn.innerText = 'ดูสินค้าถึงร้าน (กดเพื่อยกเลิก)';
+            } else {
+                btn.classList.remove('active');
+                btn.innerText = 'ดูสินค้าถึงร้าน';
+            }
+            applyFilter();
+        }
+
         function getSelectedSkus(trackingFull) {
             return globalSelectedSkusMap[trackingFull] || [];
         }
@@ -478,7 +509,7 @@
                 globalSelectedSkusMap[trackingFull].push(skuValue.trim());
                 inputElement.value = '';
                 saveSelectedSkusToGitHub();
-                renderData(rawData);
+                applyFilter();
             }
         }
 
@@ -486,7 +517,7 @@
             if (globalSelectedSkusMap[trackingFull]) {
                 globalSelectedSkusMap[trackingFull].splice(index, 1);
                 saveSelectedSkusToGitHub();
-                renderData(rawData);
+                applyFilter();
             }
         }
 
@@ -572,6 +603,21 @@
             return '-';
         }
 
+        function getCalculatedStoreDate(item) {
+            const realStoreObj = parseArrivalDate(item['ชำระเงินค่าสินค้า'] || item['รายการสั่งซื้อ'] || '');
+            if (realStoreObj) return realStoreObj;
+
+            const dateOutObj = parseDate(item['ออกโกดัง']);
+            let dateArriveTHObj = parseDate(item['ถึงไทย']);
+            if (!dateArriveTHObj && dateOutObj) {
+                dateArriveTHObj = addDays(dateOutObj, 8);
+            }
+            if (dateArriveTHObj) {
+                return addDays(dateArriveTHObj, 4);
+            }
+            return null;
+        }
+
         function scrollToCard(cardId) {
             const targetElement = document.getElementById(cardId);
             if (targetElement) {
@@ -579,6 +625,19 @@
                 targetElement.classList.remove('card-highlight');
                 void targetElement.offsetWidth;
                 targetElement.classList.add('card-highlight');
+            }
+        }
+
+        // ฟังก์ชันสร้างตัวเลือกสินค้าที่รองรับทั้ง iOS และอุปกรณ์อื่นๆ
+        function renderSkuInputHtml(inputId) {
+            if (isIOS) {
+                let options = `<option value="">+ เลือก SKU...</option>`;
+                skuProducts.forEach(name => {
+                    options += `<option value="${name}">${name}</option>`;
+                });
+                return `<select id="${inputId}" class="sku-select-input">${options}</select>`;
+            } else {
+                return `<input list="skuDatalist" id="${inputId}" class="sku-select-input" placeholder="+ เลือก/พิมพ์ค้นหา SKU..." />`;
             }
         }
 
@@ -696,7 +755,7 @@
                             <summary>สินค้าในออเดอร์ (${selectedSkus.length})</summary>
                             <div class="dropdown-content">
                                 <div class="sku-input-group">
-                                    <input list="skuDatalist" id="sku-input-pc-${index}" class="sku-select-input" placeholder="+ เลือก/พิมพ์ค้นหา SKU..." />
+                                    ${renderSkuInputHtml(`sku-input-pc-${index}`)}
                                     <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', document.getElementById('sku-input-pc-${index}'))">บันทึก</button>
                                 </div>
                                 <div class="selected-sku-list">${skuCardsHtml}</div>
@@ -732,7 +791,7 @@
                             <summary>สินค้าในออเดอร์นี้ (${selectedSkus.length})</summary>
                             <div class="dropdown-content">
                                 <div class="sku-input-group">
-                                    <input list="skuDatalist" id="sku-input-mobile-${index}" class="sku-select-input" placeholder="+ พิมพ์เพื่อค้นหาและเลือก SKU..." />
+                                    ${renderSkuInputHtml(`sku-input-mobile-${index}`)}
                                     <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', document.getElementById('sku-input-mobile-${index}'))">บันทึก</button>
                                 </div>
                                 <div class="selected-sku-list">${skuCardsHtml}</div>
@@ -801,17 +860,41 @@
 
         function applyFilter() {
             const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-            if (!keyword) {
-                renderData(rawData);
-                return;
+            let processedData = [...rawData];
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (keyword) {
+                processedData = processedData.filter(item => {
+                    const rawTrack = item['รหัสพัสดุ'] || item['Tracking'] || '';
+                    const selectedSkus = getSelectedSkus(formatTrackingNo(rawTrack).full).join(' ').toLowerCase();
+                    const matchFields = Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
+                    return matchFields || selectedSkus.includes(keyword);
+                });
             }
-            const filtered = rawData.filter(item => {
-                const rawTrack = item['รหัสพัสดุ'] || item['Tracking'] || '';
-                const selectedSkus = getSelectedSkus(formatTrackingNo(rawTrack).full).join(' ').toLowerCase();
-                const matchFields = Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
-                return matchFields || selectedSkus.includes(keyword);
-            });
-            renderData(filtered);
+
+            if (isSortFastestFirst) {
+                processedData = processedData.filter(item => {
+                    const storeDate = getCalculatedStoreDate(item);
+                    if (!storeDate) return true;
+                    storeDate.setHours(0, 0, 0, 0);
+                    return storeDate.getTime() >= today.getTime();
+                });
+
+                processedData.sort((a, b) => {
+                    const dateA = getCalculatedStoreDate(a);
+                    const dateB = getCalculatedStoreDate(b);
+                    
+                    if (!dateA && !dateB) return 0;
+                    if (!dateA) return 1;
+                    if (!dateB) return -1;
+                    
+                    return dateA.getTime() - dateB.getTime();
+                });
+            }
+
+            renderData(processedData);
         }
 
         function openTrackingModal(fullTrack) {
