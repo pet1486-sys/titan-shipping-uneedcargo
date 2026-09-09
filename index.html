@@ -12,8 +12,11 @@
         /* Header Bar */
         .navbar { background-color: #ff6600; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .navbar .brand { font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .nav-actions { display: flex; gap: 6px; }
         .btn-top-action { background-color: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
         .btn-top-action:hover { background-color: #15803d; }
+        .btn-save-json { background-color: #2563eb; }
+        .btn-save-json:hover { background-color: #1d4ed8; }
 
         /* Status Bar */
         .status-bar { background: #fff3eb; border-bottom: 1px solid #ffd8be; padding: 6px 12px; font-size: 11.5px; color: #d97706; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -123,7 +126,10 @@
 
     <div class="navbar" id="topNav">
         <div class="brand">u.need.cargo</div>
-        <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
+        <div class="nav-actions">
+            <button class="btn-top-action btn-save-json" onclick="saveSelectedSkusToGitHub()">บันทึกข้อมูลสินค้า</button>
+            <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
+        </div>
     </div>
 
     <!-- แถบสถานะการดึงข้อมูลอัตโนมัติ -->
@@ -223,10 +229,9 @@
 
         let rawData = [];
         let skuProducts = [];
-        let globalSelectedSkusMap = {}; // ตัวแปรเก็บคู่เลขพัสดุกับ SKU แบบ Global
+        let globalSelectedSkusMap = {};
         let isAllSkuOpen = false;
 
-        /* 🌐 ดึงข้อมูลไฟล์ cargo_selected_skus.json จาก GitHub */
         async function fetchGitHubSkuJson() {
             try {
                 const res = await fetch(`${RAW_REPO_URL}/${JSON_FILE_PATH}?nocache=${new Date().getTime()}`);
@@ -241,7 +246,7 @@
             }
         }
 
-        /* 💾 อัปเดตและเขียนไฟล์ cargo_selected_skus.json กลับขึ้น GitHub API */
+        /* ปุ่มกดบันทึกข้อมูลสินค้าทั้งหมดขึ้น GitHub แบบครั้งเดียว */
         async function saveSelectedSkusToGitHub() {
             localStorage.setItem('cargo_selected_skus', JSON.stringify(globalSelectedSkusMap));
             
@@ -261,7 +266,6 @@
             statusText.innerText = 'กำลังบันทึกข้อมูลสินค้าลง GitHub...';
 
             try {
-                // 1. ดึง sha ของไฟล์เดิมก่อน (ถ้ามี)
                 let sha = "";
                 const getFileRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${JSON_FILE_PATH}`, {
                     headers: { 'Authorization': `token ${token}` }
@@ -271,7 +275,6 @@
                     sha = fileData.sha;
                 }
 
-                // 2. แปลงข้อมูล JSON เป็น Base64 (รองรับ ภาษาไทย/UTF-8)
                 const jsonString = JSON.stringify(globalSelectedSkusMap, null, 2);
                 const bytes = new TextEncoder().encode(jsonString);
                 let binary = '';
@@ -280,7 +283,6 @@
                 }
                 const base64Content = btoa(binary);
 
-                // 3. ยิง Commit ไฟล์กลับขึ้น GitHub
                 const putRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${JSON_FILE_PATH}`, {
                     method: 'PUT',
                     headers: {
@@ -296,9 +298,11 @@
                 });
 
                 if (putRes.ok) {
+                    alert("บันทึกข้อมูลสินค้าขึ้น GitHub เรียบร้อยแล้ว!");
                     statusText.innerText = 'บันทึกและอัปเดตไฟล์ขึ้น GitHub เรียบร้อยแล้ว!';
                 } else {
                     const err = await putRes.json();
+                    alert(`เกิดข้อผิดพลาดในการบันทึกขึ้น GitHub: ${err.message}`);
                     statusText.innerText = `เกิดข้อผิดพลาดในการบันทึกขึ้น GitHub: ${err.message}`;
                 }
             } catch (e) {
@@ -307,7 +311,6 @@
             }
         }
 
-        /* ⚡ รวมกระบวนการตรวจเช็ก Token + สั่งรัน Python ในปุ่มเดียว */
         async function handleFetchDataProcess() {
             let token = localStorage.getItem('gh_pat_token');
 
@@ -476,21 +479,23 @@
             return globalSelectedSkusMap[trackingFull] || [];
         }
 
-        async function addSkuToTrack(trackingFull, skuValue) {
+        /* เลือกเพิ่ม SKU ในเครื่องชั่วคราวก่อน (ยังไม่อัปขึ้น Git) */
+        function addSkuToTrack(trackingFull, skuValue) {
             if (!skuValue || !skuValue.trim()) return;
             if (!globalSelectedSkusMap[trackingFull]) globalSelectedSkusMap[trackingFull] = [];
             
             if (!globalSelectedSkusMap[trackingFull].includes(skuValue.trim())) {
                 globalSelectedSkusMap[trackingFull].push(skuValue.trim());
-                await saveSelectedSkusToGitHub();
+                localStorage.setItem('cargo_selected_skus', JSON.stringify(globalSelectedSkusMap));
             }
             renderData(rawData);
         }
 
-        async function removeSkuFromTrack(trackingFull, index) {
+        /* ลบ SKU ในเครื่องชั่วคราวก่อน (ยังไม่อัปขึ้น Git) */
+        function removeSkuFromTrack(trackingFull, index) {
             if (globalSelectedSkusMap[trackingFull]) {
                 globalSelectedSkusMap[trackingFull].splice(index, 1);
-                await saveSelectedSkusToGitHub();
+                localStorage.setItem('cargo_selected_skus', JSON.stringify(globalSelectedSkusMap));
             }
             renderData(rawData);
         }
