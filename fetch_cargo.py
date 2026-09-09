@@ -2,15 +2,13 @@ import asyncio
 import os
 from playwright.async_api import async_playwright
 import pandas as pd
-from datetime import datetime
 
-# ดึงค่าจาก GitHub Secrets (ถ้าไม่มีในเครื่องจะใช้ค่าตามที่กำหนด)
+# ดึงค่าจาก GitHub Secrets
 USERNAME = os.getenv("CARGO_USERNAME", "htninja")
 PASSWORD = os.getenv("CARGO_PASSWORD", "spv123456")
 
 async def function_run():
     async with async_playwright() as p:
-        # 📌 สำคัญ: เปลี่ยน headless=True เพื่อให้รันบน GitHub Actions ได้
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context()
         page = await context.new_page()
@@ -65,15 +63,12 @@ async def function_run():
                         "หมายเหตุ": get_val(15),
                     })
 
+        # บันทึกทับไฟล์เดียวตลอด
         if all_data:
             df = pd.DataFrame(all_data)
-            # ตั้งชื่อไฟล์คงที่ไว้ที่ cargo_latest.xlsx หรือใส่ชื่อตามวันที่
-            today = datetime.now().strftime("%Y-%m-%d")
-            filename = f"cargo_packages_p1-5_{today}.xlsx"
-            
+            filename = "cargo_packages_p1-5.xlsx"
             df.to_excel(filename, index=False)
-            df.to_excel("cargo_latest.xlsx", index=False) # สํารองไฟล์ล่าสุดไว้ใช้ดึงใส่ง่ายๆ
-            print(f"\nบันทึกข้อมูลสำเร็จ! รวมทั้งหมด {len(all_data)} รายการ")
+            print(f"\nบันทึกข้อมูลสำเร็จ! บันทึกทับลงในไฟล์: {filename} รวม {len(all_data)} รายการ")
         else:
             print("\nไม่พบข้อมูลพัสดุ")
 
