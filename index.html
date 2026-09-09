@@ -2,20 +2,28 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ปิดการซูมบนมือถือเพื่อป้องกันหน้าจอดึงขยาย -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>u.need.cargo - รายการพัสดุ</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Tom Select CSS & JS (ช่วยให้ iOS แสดง Dropdown พร้อมพิมพ์ค้นหาได้สมบูรณ์) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f5f5f7; color: #333; padding-bottom: 30px; }
+        
+        /* ป้องกัน iOS ขยายขนาดฟอนต์อัตโนมัติเมื่อเอียงหน้าจอ */
+        html { -webkit-text-size-adjust: 100%; }
+        
+        body { background-color: #f5f5f7; color: #333; padding-bottom: 30px; touch-action: manipulation; }
 
-        /* Header Bar */
         .navbar { background-color: #ff6600; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .navbar .brand { font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
         .btn-top-action { background-color: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
         .btn-top-action:hover { background-color: #15803d; }
 
-        /* Quick Badges Section (ย้ายมาไว้ก่อน Sticky Header Group) */
         .quick-badges-section { background: white; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
         .quick-badges-title { font-size: 11.5px; font-weight: bold; color: #475569; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
         .badge-count-tag { background: #ff6600; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; }
@@ -23,44 +31,33 @@
         .badge-item { background: #fff3eb; border: 1px solid #ffd8be; color: #d97706; font-size: 10.5px; font-weight: bold; padding: 6px 2px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .badge-item:hover { background: #ff6600; color: white; border-color: #ff6600; }
 
-        /* Sticky Container */
         .sticky-header-group { position: sticky; top: 0; z-index: 1000; background: #f5f5f7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
-        /* 1. Status Bar */
         .status-bar { background: #fff3eb; border-bottom: 1px solid #ffd8be; padding: 6px 12px; font-size: 11.5px; color: #d97706; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-
-        /* 2. Sticky Nav */
         .sticky-nav { background: #ffffff; padding: 6px; display: flex; gap: 4px; border-bottom: 1px solid #e2e8f0; width: 100%; }
         .nav-btn { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; padding: 6px 2px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nav-btn:hover { background: #ff6600; color: white; border-color: #ff6600; }
         .nav-btn-toggle { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
 
-        /* Search & Filter Bar */
         .action-container { padding: 8px 12px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; gap: 6px; flex-wrap: wrap; }
-        .search-box { flex: 1; min-width: 150px; padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 12.5px; outline: none; }
+        .search-box { flex: 1; min-width: 150px; padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; outline: none; }
         .search-box:focus { border-color: #ff6600; }
         .btn-search { background-color: #ff6600; color: white; border: none; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap; }
         .btn-sort { background-color: #0284c7; color: white; border: none; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap; transition: 0.2s; width: 100%; text-align: center; }
         .btn-sort:hover { background-color: #0369a1; }
         .btn-sort.active { background-color: #0f172a; }
 
-        /* Content Area */
         .content-area { padding: 12px 10px 0 10px; max-width: 1200px; margin: 0 auto; }
-
-        /* PC Layout: Table */
         .desktop-table-wrapper { background: white; border-radius: 8px; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; scroll-margin-top: 80px; }
         .desktop-table { width: 100%; border-collapse: collapse; min-width: 800px; }
         .desktop-table th, .desktop-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
         .desktop-table th { background-color: #fafafa; color: #666; font-weight: 600; }
 
-        /* Mobile Layout: Cards */
         .mobile-cards { display: none; scroll-margin-top: 80px; }
         .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eaeaea; font-size: 12.5px; line-height: 1.5; transition: border-color 0.3s; scroll-margin-top: 90px; }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
         
         .tracking-box { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .tracking-display { color: #ff6600; font-weight: bold; font-size: 16px; white-space: nowrap; }
-        
         .btn-icon-copy { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 2px 5px; border-radius: 4px; font-size: 10.5px; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .btn-icon-copy:hover { background-color: #e2e8f0; color: #0f172a; }
 
@@ -68,14 +65,12 @@
         .date-row { display: flex; justify-content: flex-end; align-items: center; gap: 3px; white-space: nowrap; }
         .estimated-tag { color: #d97706; font-size: 9px; font-weight: 500; }
 
-        /* Highlight Animation */
         .card-highlight { animation: highlightGlow 2s ease-out; }
         @keyframes highlightGlow {
             0% { border-color: #ff6600; box-shadow: 0 0 10px rgba(255, 102, 0, 0.5); }
             100% { border-color: #eaeaea; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         }
 
-        /* Dropdowns */
         details { margin-top: 6px; border-top: 1px dashed #f1f5f9; padding-top: 4px; }
         summary { font-size: 11.5px; color: #0284c7; cursor: pointer; font-weight: bold; user-select: none; }
         summary:hover { text-decoration: underline; }
@@ -84,14 +79,12 @@
         .extra-dropdown summary { color: #64748b; font-size: 11px; }
         .price-tag { color: #10b981; font-weight: bold; font-size: 14px; }
 
-        /* โซนสินค้า + ปุ่มบันทึกในแต่ละการ์ด */
         .item-note-box { margin-top: 4px; }
-        .sku-input-group { display: flex; gap: 4px; margin-bottom: 4px; }
+        .sku-input-group { display: flex; gap: 4px; margin-bottom: 4px; align-items: center; }
+        .ts-wrapper { flex: 1; font-size: 14px; }
+        .ts-control { border-radius: 5px !important; min-height: 32px !important; padding: 4px 8px !important; }
         
-        /* ปรับแต่งสำหรับ Input datalist ให้รองรับพิมพ์กรองบน iOS/Safari */
-        .sku-select-input { flex: 1; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11.5px; font-family: inherit; outline: none; background: #fafafa; }
-        .sku-select-input:focus { border-color: #ff6600; background: #ffffff; }
-        .btn-save-card { background-color: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+        .btn-save-card { background-color: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.2s; height: 32px; }
         .btn-save-card:hover { background-color: #1d4ed8; }
         
         .selected-sku-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
@@ -103,14 +96,12 @@
         .sku-item-remove { cursor: pointer; color: #ef4444; font-weight: bold; font-size: 15px; padding: 2px 4px; }
         .sku-item-remove:hover { color: #dc2626; }
 
-        /* โซนจัดส่งแล้ว */
         .completed-section { margin-top: 16px; }
         .completed-details { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; overflow: hidden; padding-top: 0; }
         .completed-summary { background-color: #f8fafc; padding: 10px 14px; font-size: 13px; color: #475569; font-weight: bold; }
         .completed-summary:hover { background-color: #f1f5f9; text-decoration: none; }
         .completed-container { padding: 10px; background-color: #f8fafc; }
 
-        /* Modal แสดงเลขเต็ม */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal-content { background-color: white; padding: 18px; border-radius: 10px; width: 90%; max-width: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); text-align: center; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -127,15 +118,11 @@
 </head>
 <body>
 
-    <!-- datalist กลางสำหรับเก็บตัวเลือกสินค้าทั้งหมด -->
-    <datalist id="skuDatalist"></datalist>
-
     <div class="navbar" id="topNav">
         <div class="brand">u.need.cargo</div>
         <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
     </div>
 
-    <!-- Quick Badges Section (ย้ายมาไว้ก่อน Sticky Header) -->
     <div class="quick-badges-section" id="quickBadgesSection" style="display: none;">
         <div class="quick-badges-title">
             <span>พัสดุที่ยังไม่ถึงร้าน</span>
@@ -144,7 +131,6 @@
         <div class="quick-badges-grid" id="quickBadgesGrid"></div>
     </div>
 
-    <!-- Sticky Header Group -->
     <div class="sticky-header-group" id="stickyGroup">
         <div class="status-bar" id="statusBar">
             <span id="statusText">บันทึกข้อมูลล่าสุดแล้ว</span>
@@ -159,7 +145,6 @@
         </div>
     </div>
 
-    <!-- Search & Filter Bar -->
     <div class="action-container">
         <input type="text" id="searchInput" class="search-box" placeholder="ค้นหารหัสพัสดุ / สินค้าที่เลือกไว้..." onkeyup="if(event.key==='Enter') applyFilter()">
         <button class="btn-search" onclick="applyFilter()">ค้นหา</button>
@@ -167,7 +152,6 @@
     </div>
 
     <div class="content-area">
-        <!-- Desktop Layout -->
         <div class="desktop-table-wrapper" id="desktopSection">
             <table class="desktop-table" id="pcTable">
                 <thead>
@@ -176,7 +160,7 @@
                         <th>ออกโกดัง</th>
                         <th>ถึงไทย</th>
                         <th>ถึงร้าน</th>
-                        <th style="min-width: 250px;">รายการสินค้า (เลือกจาก SKU)</th>
+                        <th style="min-width: 280px;">รายการสินค้า (เลือกจาก SKU)</th>
                         <th>ข้อมูลเพิ่มเติม</th>
                     </tr>
                 </thead>
@@ -184,10 +168,8 @@
             </table>
         </div>
 
-        <!-- Mobile Layout -->
         <div class="mobile-cards" id="mobileCards"></div>
 
-        <!-- โซนพัสดุจัดส่งแล้ว -->
         <div class="completed-section" id="completedSection" style="display: none;">
             <details class="completed-details">
                 <summary class="completed-summary">สินค้าที่จัดส่งแล้ว (ผ่านไปเกิน 5 วัน) [<span id="completedCount">0</span>]</summary>
@@ -200,7 +182,7 @@
                                     <th>ออกโกดัง</th>
                                     <th>ถึงไทย</th>
                                     <th>ถึงร้าน</th>
-                                    <th style="min-width: 250px;">รายการสินค้า</th>
+                                    <th style="min-width: 280px;">รายการสินค้า</th>
                                     <th>ข้อมูลเพิ่มเติม</th>
                                 </tr>
                             </thead>
@@ -213,7 +195,6 @@
         </div>
     </div>
 
-    <!-- Modal แสดงเลขเต็ม -->
     <div class="modal" id="trackingModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -236,6 +217,7 @@
         let globalSelectedSkusMap = {};
         let isAllSkuOpen = false;
         let isSortFastestFirst = false;
+        let tomSelectInstances = {};
 
         async function fetchGitHubSkuJson() {
             try {
@@ -324,21 +306,8 @@
                     return;
                 }
             } else {
-                const confirmRun = confirm("ยืนยันการสั่งรันสคริปต์ Python บน GitHub Actions ใช่หรือไม่?\n\n(กด 'Cancel' หากต้องการแก้ไขรหัส Token)");
-                if (!confirmRun) {
-                    const editToken = prompt("แก้ไข/เปลี่ยน GitHub Token สำหรับเครื่องนี้:", token);
-                    if (editToken !== null) {
-                        if (editToken.trim()) {
-                            localStorage.setItem('gh_pat_token', editToken.trim());
-                            token = editToken.trim();
-                            alert("อัปเดต Token ใหม่เรียบร้อยแล้ว!");
-                        } else {
-                            localStorage.removeItem('gh_pat_token');
-                            alert("ลบ Token ออกเรียบร้อยแล้ว");
-                        }
-                    }
-                    return;
-                }
+                const confirmRun = confirm("ยืนยันการสั่งรันสคริปต์ Python บน GitHub Actions ใช่หรือไม่?");
+                if (!confirmRun) return;
             }
 
             const statusText = document.getElementById('statusText');
@@ -356,7 +325,7 @@
                 });
 
                 if (res.ok) {
-                    alert('ส่งคำสั่งสำเร็จ! สคริปต์กำลังรันใน Background (ใช้เวลาประมาณ 1-2 นาที แนะนำให้กดรีเฟรชภายหลัง)');
+                    alert('ส่งคำสั่งสำเร็จ! สคริปต์กำลังรันใน Background');
                     statusText.innerText = '⏳ สคริปต์กำลังทำงานบน GitHub...';
                 } else {
                     const err = await res.json();
@@ -370,8 +339,7 @@
 
         function cleanFileName(name) {
             if (!name) return "";
-            return name
-                .trim()
+            return name.trim()
                 .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F800}-\u{1F8FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
                 .replace(/[<>"':?*|\\\/()\[\]{}!@#$%^&+=,.~`]/g, '')
                 .replace(/\s+/g, '_')
@@ -403,7 +371,7 @@
                     parseSkuWorkbook(skuBuf);
                 }
             } catch (e) {
-                console.log("อ่านไฟล์ SKU.xlsx อัตโนมัติไม่สำเร็จ:", e);
+                console.log("อ่านไฟล์ SKU.xlsx ไม่สำเร็จ:", e);
             }
 
             try {
@@ -416,10 +384,10 @@
                     applyFilter();
                     statusText.innerText = `✅ โหลดข้อมูลสำเร็จ (${rawData.length} รายการ)`;
                 } else {
-                    statusText.innerText = '⚠️ ไม่พบไฟล์ cargo_packages_p1-5.xlsx ในระบบ';
+                    statusText.innerText = '⚠️ ไม่พบไฟล์ cargo_packages_p1-5.xlsx';
                 }
             } catch (e) {
-                statusText.innerText = '❌ เกิดข้อผิดพลาดในการดึงไฟล์พัสดุอัตโนมัติ';
+                statusText.innerText = '❌ เกิดข้อผิดพลาดในการดึงไฟล์พัสดุ';
             }
         }
 
@@ -445,33 +413,20 @@
                 }
                 skuProducts = [...new Set(skuProducts)];
                 localStorage.setItem('cargo_sku_products', JSON.stringify(skuProducts));
-                updateSkuDatalist();
             }
-        }
-
-        function updateSkuDatalist() {
-            const datalist = document.getElementById('skuDatalist');
-            datalist.innerHTML = '';
-            skuProducts.forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                datalist.appendChild(opt);
-            });
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedSku = localStorage.getItem('cargo_sku_products');
             if (savedSku) {
                 skuProducts = JSON.parse(savedSku);
-                updateSkuDatalist();
             }
             autoFetchData();
         });
 
         function toggleAllSkuDetails() {
             isAllSkuOpen = !isAllSkuOpen;
-            const allSkuDetails = document.querySelectorAll('.sku-details-dropdown');
-            allSkuDetails.forEach(details => {
+            document.querySelectorAll('.sku-details-dropdown').forEach(details => {
                 details.open = isAllSkuOpen;
             });
         }
@@ -493,14 +448,16 @@
             return globalSelectedSkusMap[trackingFull] || [];
         }
 
-        function addSkuToTrack(trackingFull, inputElement) {
-            const skuValue = inputElement.value;
+        function addSkuToTrack(trackingFull, selectId) {
+            const tsInstance = tomSelectInstances[selectId];
+            const skuValue = tsInstance ? tsInstance.getValue() : '';
             if (!skuValue || !skuValue.trim()) return;
+            
             if (!globalSelectedSkusMap[trackingFull]) globalSelectedSkusMap[trackingFull] = [];
             
             if (!globalSelectedSkusMap[trackingFull].includes(skuValue.trim())) {
                 globalSelectedSkusMap[trackingFull].push(skuValue.trim());
-                inputElement.value = '';
+                if (tsInstance) tsInstance.clear();
                 saveSelectedSkusToGitHub();
                 applyFilter();
             }
@@ -531,7 +488,6 @@
         function formatTrackingNo(raw) {
             if (!raw) return { display: '-', full: '-' };
             const cleanStr = String(raw).trim();
-            
             if (cleanStr.includes('#')) {
                 const parts = cleanStr.split('#');
                 const baseTrack = parts[0];
@@ -548,10 +504,7 @@
             if (!dateStr || dateStr.trim() === '-' || dateStr.trim() === '') return null;
             const parts = dateStr.trim().split('/');
             if (parts.length === 3) {
-                const day = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1;
-                const year = parseInt(parts[2], 10);
-                return new Date(year, month, day);
+                return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
             }
             return null;
         }
@@ -560,26 +513,21 @@
             if (!dateObj || isNaN(dateObj.getTime())) return '-';
             const day = String(dateObj.getDate()).padStart(2, '0');
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const year = dateObj.getFullYear();
-            return `${day}/${month}/${year}`;
+            return `${day}/${month}/${dateObj.getFullYear()}`;
         }
 
         function addDays(dateObj, days) {
             if (!dateObj) return null;
-            const result = new Date(dateObj);
-            result.setDate(result.getDate() + days);
-            return result;
+            const res = new Date(dateObj);
+            res.setDate(res.getDate() + days);
+            return res;
         }
 
         function parseArrivalDate(invStr) {
             if (!invStr) return null;
-            const str = String(invStr).trim();
-            const match = str.match(/INV(\d{2})(\d{2})(\d{2})/i);
+            const match = String(invStr).trim().match(/INV(\d{2})(\d{2})(\d{2})/i);
             if (match) {
-                const year = 2000 + parseInt(match[1], 10);
-                const month = parseInt(match[2], 10) - 1;
-                const day = parseInt(match[3], 10);
-                return new Date(year, month, day);
+                return new Date(2000 + parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
             }
             return null;
         }
@@ -589,10 +537,9 @@
             const priceCbm = item['ราคาคิว'] || item['ราคา/คิว'] || '';
             const totalPrice = item['ราคา'] || item['ราคารวม'] || '';
 
-            if (priceKg && String(priceKg).trim() !== '-' && String(priceKg).trim() !== '') return String(priceKg).trim();
-            if (priceCbm && String(priceCbm).trim() !== '-' && String(priceCbm).trim() !== '') return String(priceCbm).trim();
-            if (totalPrice && String(totalPrice).trim() !== '-' && String(totalPrice).trim() !== '') return String(totalPrice).trim();
-            
+            if (priceKg && String(priceKg).trim() !== '-') return String(priceKg).trim();
+            if (priceCbm && String(priceCbm).trim() !== '-') return String(priceCbm).trim();
+            if (totalPrice && String(totalPrice).trim() !== '-') return String(totalPrice).trim();
             return '-';
         }
 
@@ -602,33 +549,46 @@
 
             const dateOutObj = parseDate(item['ออกโกดัง']);
             let dateArriveTHObj = parseDate(item['ถึงไทย']);
-            if (!dateArriveTHObj && dateOutObj) {
-                dateArriveTHObj = addDays(dateOutObj, 8);
-            }
-            if (dateArriveTHObj) {
-                return addDays(dateArriveTHObj, 4);
-            }
+            if (!dateArriveTHObj && dateOutObj) dateArriveTHObj = addDays(dateOutObj, 8);
+            if (dateArriveTHObj) return addDays(dateArriveTHObj, 4);
             return null;
         }
 
-        function scrollToCard(cardId) {
-            const targetElement = document.getElementById(cardId);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetElement.classList.remove('card-highlight');
-                void targetElement.offsetWidth;
-                targetElement.classList.add('card-highlight');
+        function initTomSelect(elementId) {
+            if (tomSelectInstances[elementId]) {
+                tomSelectInstances[elementId].destroy();
             }
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            tomSelectInstances[elementId] = new TomSelect(`#${elementId}`, {
+                create: false,
+                placeholder: 'พิมพ์หรือเลือก SKU...',
+                maxOptions: 50,
+                sortField: { field: "text", order: "asc" }
+            });
+        }
+
+        function buildSkuOptions() {
+            let optionsHtml = '<option value="">พิมพ์หรือเลือก SKU...</option>';
+            skuProducts.forEach(name => {
+                optionsHtml += `<option value="${name}">${name}</option>`;
+            });
+            return optionsHtml;
         }
 
         function renderData(data) {
+            Object.keys(tomSelectInstances).forEach(id => {
+                if (tomSelectInstances[id]) tomSelectInstances[id].destroy();
+            });
+            tomSelectInstances = {};
+
             const pcTbody = document.querySelector('#pcTable tbody');
             const mobileCards = document.getElementById('mobileCards');
             const pcTbodyCompleted = document.querySelector('#pcTableCompleted tbody');
             const mobileCardsCompleted = document.getElementById('mobileCardsCompleted');
             const completedSection = document.getElementById('completedSection');
             const completedCountSpan = document.getElementById('completedCount');
-            
             const quickBadgesSection = document.getElementById('quickBadgesSection');
             const quickBadgesGrid = document.getElementById('quickBadgesGrid');
             const pendingCountTag = document.getElementById('pendingCountTag');
@@ -644,6 +604,7 @@
 
             let completedCount = 0;
             let pendingItems = [];
+            const skuOptions = buildSkuOptions();
 
             data.forEach((item, index) => {
                 const rawTracking = item['รหัสพัสดุ'] || item['Tracking'] || '';
@@ -683,21 +644,14 @@
 
                 let isPassed5Days = false;
                 if (realStoreObj) {
-                    const diffTime = today.getTime() - realStoreObj.getTime();
-                    const diffDays = diffTime / (1000 * 3600 * 24);
-                    if (diffDays >= 5) {
-                        isPassed5Days = true;
-                    }
+                    const diffDays = (today.getTime() - realStoreObj.getTime()) / (1000 * 3600 * 24);
+                    if (diffDays >= 5) isPassed5Days = true;
                 }
 
                 const cardId = `card-item-${index}`;
 
-                const isArrivedRealStore = realStoreObj && (realStoreObj.getTime() <= today.getTime());
-                if (!isArrivedRealStore) {
-                    pendingItems.push({
-                        display: trackingObj.display,
-                        cardId: cardId
-                    });
+                if (!realStoreObj || realStoreObj.getTime() > today.getTime()) {
+                    pendingItems.push({ display: trackingObj.display, cardId: cardId });
                 }
 
                 let skuCardsHtml = selectedSkus.map((sName, idx) => {
@@ -719,12 +673,14 @@
                 }).join('');
 
                 const openAttr = isAllSkuOpen ? 'open' : '';
+                const pcSelectId = `sku-select-pc-${index}`;
+                const mobileSelectId = `sku-select-mobile-${index}`;
 
                 const trHtml = `
                     <td>
                         <div class="tracking-box">
                             <span class="tracking-display" style="font-size:14px;">${trackingObj.display}</span>
-                            <button class="btn-icon-copy" onclick="openTrackingModal('${trackingObj.full}')" title="ดูเลขเต็ม">คัดลอก</button>
+                            <button class="btn-icon-copy" onclick="openTrackingModal('${trackingObj.full}')">คัดลอก</button>
                         </div>
                     </td>
                     <td>${dateOutText}</td>
@@ -735,8 +691,8 @@
                             <summary>สินค้าในออเดอร์ (${selectedSkus.length})</summary>
                             <div class="dropdown-content">
                                 <div class="sku-input-group">
-                                    <input list="skuDatalist" id="sku-input-pc-${index}" class="sku-select-input" placeholder="+ พิมพ์ค้นหา หรือ เลือก SKU..." />
-                                    <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', document.getElementById('sku-input-pc-${index}'))">บันทึก</button>
+                                    <select id="${pcSelectId}">${skuOptions}</select>
+                                    <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', '${pcSelectId}')">บันทึก</button>
                                 </div>
                                 <div class="selected-sku-list">${skuCardsHtml}</div>
                             </div>
@@ -757,7 +713,7 @@
                     <div class="card-header">
                         <div class="tracking-box">
                             <span class="tracking-display">${trackingObj.display}</span>
-                            <button class="btn-icon-copy" onclick="openTrackingModal('${trackingObj.full}')" title="ดูเลขเต็ม">คัดลอก</button>
+                            <button class="btn-icon-copy" onclick="openTrackingModal('${trackingObj.full}')">คัดลอก</button>
                         </div>
                         <div class="date-info">
                             <div class="date-row">ออกโกดัง: ${dateOutText}</div>
@@ -771,8 +727,8 @@
                             <summary>สินค้าในออเดอร์นี้ (${selectedSkus.length})</summary>
                             <div class="dropdown-content">
                                 <div class="sku-input-group">
-                                    <input list="skuDatalist" id="sku-input-mobile-${index}" class="sku-select-input" placeholder="+ พิมพ์ค้นหา หรือ เลือก SKU..." />
-                                    <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', document.getElementById('sku-input-mobile-${index}'))">บันทึก</button>
+                                    <select id="${mobileSelectId}">${skuOptions}</select>
+                                    <button class="btn-save-card" onclick="addSkuToTrack('${trackingObj.full}', '${mobileSelectId}')">บันทึก</button>
                                 </div>
                                 <div class="selected-sku-list">${skuCardsHtml}</div>
                             </div>
@@ -812,18 +768,24 @@
                     card.innerHTML = cardHtml;
                     mobileCards.appendChild(card);
                 }
+
+                setTimeout(() => {
+                    initTomSelect(pcSelectId);
+                    initTomSelect(mobileSelectId);
+                }, 0);
             });
 
             if (pendingItems.length > 0) {
                 quickBadgesSection.style.display = 'block';
                 pendingCountTag.innerText = `${pendingItems.length} กล่อง`;
-                
                 pendingItems.forEach(pItem => {
                     const badge = document.createElement('div');
                     badge.className = 'badge-item';
                     badge.innerText = pItem.display;
-                    badge.title = pItem.display;
-                    badge.onclick = () => scrollToCard(pItem.cardId);
+                    badge.onclick = () => {
+                        const target = document.getElementById(pItem.cardId);
+                        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    };
                     quickBadgesGrid.appendChild(badge);
                 });
             } else {
@@ -865,11 +827,9 @@
                 processedData.sort((a, b) => {
                     const dateA = getCalculatedStoreDate(a);
                     const dateB = getCalculatedStoreDate(b);
-                    
                     if (!dateA && !dateB) return 0;
                     if (!dateA) return 1;
                     if (!dateB) return -1;
-                    
                     return dateA.getTime() - dateB.getTime();
                 });
             }
@@ -887,11 +847,8 @@
         }
 
         function copyTrackingText() {
-            const textToCopy = document.getElementById('fullTrackValue').innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => {
+            navigator.clipboard.writeText(document.getElementById('fullTrackValue').innerText).then(() => {
                 alert('คัดลอกรหัสพัสดุเต็มเรียบร้อยแล้ว!');
-            }).catch(err => {
-                console.error('Copy error: ', err);
             });
         }
     </script>
