@@ -171,7 +171,7 @@
         <div class="mobile-cards" id="mobileCards"></div>
 
         <div class="completed-section" id="completedSection" style="display: none;">
-            <details class="completed-details">
+            details class="completed-details">
                 <summary class="completed-summary">สินค้าที่จัดส่งแล้ว (ผ่านไปเกิน 5 วัน) [<span id="completedCount">0</span>]</summary>
                 <div class="completed-container">
                     <div class="desktop-table-wrapper" style="box-shadow:none; border: 1px solid #e2e8f0;">
@@ -215,7 +215,7 @@
         let rawData = [];
         let skuProducts = [];
         let globalSelectedSkusMap = {};
-        let isAllSkuOpen = true; // เปิดกางรายการสินค้าเป็นค่าเริ่มต้น
+        let isAllSkuOpen = true;
         let isSortFastestFirst = false;
         let tomSelectInstances = {};
 
@@ -556,7 +556,7 @@
 
         function initTomSelect(elementId) {
             if (tomSelectInstances[elementId]) {
-                tomSelectInstances[elementId].destroy();
+                try { tomSelectInstances[elementId].destroy(); } catch(e){}
             }
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -577,9 +577,67 @@
             return optionsHtml;
         }
 
+        function applyFilter() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            let processedData = [...rawData];
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (keyword) {
+                processedData = processedData.filter(item => {
+                    const rawTrack = item['รหัสพัสดุ'] || item['Tracking'] || '';
+                    const selectedSkus = getSelectedSkus(formatTrackingNo(rawTrack).full).join(' ').toLowerCase();
+                    const matchFields = Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
+                    return matchFields || selectedSkus.includes(keyword);
+                });
+            }
+
+            if (isSortFastestFirst) {
+                processedData = processedData.filter(item => {
+                    const storeDate = getCalculatedStoreDate(item);
+                    if (!storeDate) return true;
+                    storeDate.setHours(0, 0, 0, 0);
+                    return storeDate.getTime() >= today.getTime();
+                });
+
+                processedData.sort((a, b) => {
+                    const dateA = getCalculatedStoreDate(a);
+                    const dateB = getCalculatedStoreDate(b);
+
+                    const timeA = dateA ? dateA.getTime() : Infinity;
+                    const timeB = dateB ? dateB.getTime() : Infinity;
+
+                    if (timeA !== timeB) return timeA - timeB;
+
+                    const trackA = String(a['รหัสพัสดุ'] || a['Tracking'] || '').trim();
+                    const trackB = String(b['รหัสพัสดุ'] || b['Tracking'] || '').trim();
+
+                    const baseA = trackA.split('#')[0].trim();
+                    const baseB = trackB.split('#')[0].trim();
+
+                    if (baseA === baseB) {
+                        const hasHashA = trackA.includes('#');
+                        const hasHashB = trackB.includes('#');
+
+                        if (!hasHashA && hasHashB) return -1;
+                        if (hasHashA && !hasHashB) return 1;
+
+                        return trackA.localeCompare(trackB, undefined, { numeric: true, sensitivity: 'base' });
+                    }
+
+                    return baseA.localeCompare(baseB, undefined, { numeric: true, sensitivity: 'base' });
+                });
+            }
+
+            renderData(processedData);
+        }
+
         function renderData(data) {
             Object.keys(tomSelectInstances).forEach(id => {
-                if (tomSelectInstances[id]) tomSelectInstances[id].destroy();
+                if (tomSelectInstances[id]) {
+                    try { tomSelectInstances[id].destroy(); } catch(e){}
+                }
             });
             tomSelectInstances = {};
 
@@ -605,6 +663,7 @@
             let completedCount = 0;
             let pendingItems = [];
             const skuOptions = buildSkuOptions();
+            const elementsToInit = [];
 
             data.forEach((item, index) => {
                 const rawTracking = item['รหัสพัสดุ'] || item['Tracking'] || '';
@@ -675,6 +734,8 @@
                 const openAttr = isAllSkuOpen ? 'open' : '';
                 const pcSelectId = `sku-select-pc-${index}`;
                 const mobileSelectId = `sku-select-mobile-${index}`;
+
+                elementsToInit.push(pcSelectId, mobileSelectId);
 
                 const trHtml = `
                     <td>
@@ -768,11 +829,10 @@
                     card.innerHTML = cardHtml;
                     mobileCards.appendChild(card);
                 }
+            });
 
-                setTimeout(() => {
-                    initTomSelect(pcSelectId);
-                    initTomSelect(mobileSelectId);
-                }, 0);
+            requestAnimationFrame(() => {
+                elementsToInit.forEach(id => initTomSelect(id));
             });
 
             if (pendingItems.length > 0) {
@@ -798,70 +858,6 @@
             } else {
                 completedSection.style.display = 'none';
             }
-        }
-
-        function applyFilter() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-            let processedData = [...rawData];
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (keyword) {
-                processedData = processedData.filter(item => {
-                    const rawTrack = item['รหัสพัสดุ'] || item['Tracking'] || '';
-                    const selectedSkus = getSelectedSkus(formatTrackingNo(rawTrack).full).join(' ').toLowerCase();
-                    const matchFields = Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
-                    return matchFields || selectedSkus.includes(keyword);
-                });
-            }
-
-            if (isSortFastestFirst) {
-                processedData = processedData.filter(item => {
-                    const storeDate = getCalculatedStoreDate(item);
-                    if (!storeDate) return true;
-                    storeDate.setHours(0, 0, 0, 0);
-                    return storeDate.getTime() >= today.getTime();
-                });
-
-                processedData.sort((a, b) => {
-                    const dateA = getCalculatedStoreDate(a);
-                    const dateB = getCalculatedStoreDate(b);
-
-                    const timeA = dateA ? dateA.getTime() : Infinity;
-                    const timeB = dateB ? dateB.getTime() : Infinity;
-
-                    // 1. เรียงตามวันที่ถึงร้าน (เร็วไปช้า)
-                    if (timeA !== timeB) {
-                        return timeA - timeB;
-                    }
-
-                    // 2. แต่วันที่ถึงร้านเท่ากัน ให้ดึงเลขพัสดุหลัก (Base ID) มาจัดกลุ่ม
-                    const trackA = String(a['รหัสพัสดุ'] || a['Tracking'] || '').trim();
-                    const trackB = String(b['รหัสพัสดุ'] || b['Tracking'] || '').trim();
-
-                    const baseA = trackA.split('#')[0].trim();
-                    const baseB = trackB.split('#')[0].trim();
-
-                    // ถ้าเป็นกลุ่มเลขพัสดุหลักเดียวกัน (เช่น 1117 กับ 1117 #2)
-                    if (baseA === baseB) {
-                        const hasHashA = trackA.includes('#');
-                        const hasHashB = trackB.includes('#');
-
-                        // ตัวไม่มี # (1117) ต้องขึ้นก่อนตัวมี # (1117 #2) เสมอ
-                        if (!hasHashA && hasHashB) return -1;
-                        if (hasHashA && !hasHashB) return 1;
-
-                        // ถ้ามี # ทั้งคู่ ให้เรียง #2, #3 ตามลำดับ
-                        return trackA.localeCompare(trackB, undefined, { numeric: true, sensitivity: 'base' });
-                    }
-
-                    // 3. ถ้าคนละเลขหลัก ให้เรียงตามตัวเลขหลัก (เพื่อให้กลุ่ม 1117 อยู่ต่อกัน ก่อนไปกลุ่มอื่น)
-                    return baseA.localeCompare(baseB, undefined, { numeric: true, sensitivity: 'base' });
-                });
-            }
-
-            renderData(processedData);
         }
 
         function openTrackingModal(fullTrack) {
