@@ -26,8 +26,8 @@
         .quick-badges-title { font-size: 12px; font-weight: bold; color: #1e293b; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .quick-badges-title::-webkit-details-marker { display: none; }
         .badge-count-tag { background: #ff6600; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; margin-left: 6px; }
-        .quick-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: start; margin-top: 8px; }
-        .badge-item { background: #fff3eb; border: 1px solid #ffd8be; color: #d97706; font-size: 10.5px; font-weight: bold; padding: 6px 2px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .quick-badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; align-items: start; margin-top: 8px; }
+        .badge-item { background: #fff3eb; border: 1px solid #ffd8be; color: #d97706; font-size: 11px; font-weight: bold; padding: 8px 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .badge-item:hover { background: #ff6600; color: white; border-color: #ff6600; }
 
         .sticky-header-group { position: sticky; top: 0; z-index: 1000; background: #f5f5f7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -55,8 +55,12 @@
         .mobile-cards { display: none; scroll-margin-top: 80px; }
         .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eaeaea; font-size: 12.5px; line-height: 1.5; transition: border-color 0.3s; scroll-margin-top: 90px; }
         
-        .card-arrived { background-color: #f0fdf4 !important; border: 1.5px solid #86efac !important; }
-        .row-arrived { background-color: #f0fdf4 !important; }
+        .card-arrived { background-color: #334155 !important; color: #f8fafc !important; border: 1.5px solid #0f172a !important; }
+        .card-arrived summary, .card-arrived .tracking-display, .card-arrived .date-info, .card-arrived .date-row, .card-arrived .sku-item-name { color: #f8fafc !important; }
+        .card-arrived .btn-icon-copy { background-color: #475569 !important; color: #ffffff !important; border-color: #64748b !important; }
+        .row-arrived { background-color: #334155 !important; color: #f8fafc !important; }
+        .row-arrived td { border-bottom: 1px solid #475569 !important; color: #f8fafc !important; }
+        .row-arrived summary, .row-arrived .tracking-display { color: #f8fafc !important; }
 
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
         
@@ -119,7 +123,6 @@
     <div class="navbar" id="topNav">
         <div class="brand">u.need.cargo</div>
         <div class="nav-actions">
-            <!-- ปุ่มรีโหลดสัญลักษณ์เล็กๆ ข้างดึงข้อมูลทันที -->
             <button class="btn-reload-icon" onclick="location.reload()" title="รีโหลดหน้าเว็บ">🔄</button>
             <button class="btn-top-action" onclick="handleFetchDataProcess()">ดึงข้อมูลทันที</button>
         </div>
@@ -146,11 +149,10 @@
         </div>
         <button class="btn-sort" id="sortArrivalBtn" onclick="toggleArrivalSort()">ดูสินค้าถึงร้าน</button>
 
-        <!-- พัสดุที่ยังไม่ถึงร้าน (กริดดูเร็ว) ย้ายมาไว้ต่อจากดูสินค้าถึงร้าน -->
-        <details class="quick-badges-section" id="quickBadgesSection" style="display: none;">
+        <details class="quick-badges-section" id="quickBadgesSection" open style="display: none;">
             <summary class="quick-badges-title">
-                <span>📦 พัสดุที่ยังไม่ถึงร้าน (กริดดูเร็ว)</span>
-                <span class="badge-count-tag" id="pendingCountTag">0 กล่อง</span>
+                <span>📦 สรุปล็อตสินค้าที่ยังไม่ถึงร้าน (กริดดูเร็ว)</span>
+                <span class="badge-count-tag" id="pendingCountTag">0 ล็อต</span>
             </summary>
             <div class="quick-badges-grid" id="quickBadgesGrid"></div>
         </details>
@@ -559,6 +561,25 @@
             return null;
         }
 
+        /* ฟังก์ชันตัดคำเฉพาะชื่อล็อต โดยแยกกรณีไม่มีเลข lot ชัดเจน */
+        function getShortLotName(rawType) {
+            if (!rawType) return "ทั่วไป";
+            let str = String(rawType).trim();
+            
+            // 1. ค้นหาแบบมีเลข lot เช่น "รถ lot18735" หรือ "lot18735"
+            const matchLot = str.match(/(รถ\s*lot\d+|lot\d+)/i);
+            if (matchLot) {
+                return matchLot[0].trim();
+            }
+
+            // 2. ถ้ามีคำว่า "รถ" แต่ไม่มีเลข lot ตามหลัง
+            if (/รถ/i.test(str)) {
+                return "รถ (รอระบุ lot)";
+            }
+
+            return str.replace(/^ธรรมดา[\s\-]*|[-–—_].*$/gi, '').trim() || "ทั่วไป";
+        }
+
         function initTomSelect(elementId) {
             if (tomSelectInstances[elementId]) {
                 try { tomSelectInstances[elementId].destroy(); } catch(e){}
@@ -590,12 +611,25 @@
             today.setHours(0, 0, 0, 0);
 
             if (keyword) {
-                processedData = processedData.filter(item => {
-                    const rawTrack = item['รหัสพัสดุ'] || item['Tracking'] || '';
-                    const selectedSkus = getSelectedSkus(formatTrackingNo(rawTrack).full).join(' ').toLowerCase();
-                    const matchFields = Object.values(item).some(val => String(val).toLowerCase().includes(keyword));
-                    return matchFields || selectedSkus.includes(keyword);
-                });
+                if (keyword === "รถ (รอระบุ lot)" || keyword === "รถรอระบุ") {
+                    // กรองเฉพาะพัสดุประเภท "รถ" ที่ยังไม่มีเลข lot
+                    processedData = processedData.filter(item => {
+                        const rawLot = String(item['ประเภทสินค้า/ล็อต'] || item['ประเภทสินค้า'] || '');
+                        return /รถ/i.test(rawLot) && !/lot\d+/i.test(rawLot);
+                    });
+                } else {
+                    const searchTerms = keyword.split(' ').filter(t => t.length > 0);
+                    processedData = processedData.filter(item => {
+                        const rawTrack = item['รหัสพัสดุ'] || item['Tracking'] || '';
+                        const rawLot = item['ประเภทสินค้า/ล็อต'] || item['ประเภทสินค้า'] || '';
+                        const shortLot = getShortLotName(rawLot).toLowerCase();
+                        const selectedSkus = getSelectedSkus(formatTrackingNo(rawTrack).full).join(' ').toLowerCase();
+
+                        const allItemString = (Object.values(item).join(' ') + ' ' + rawLot + ' ' + shortLot + ' ' + selectedSkus).toLowerCase();
+
+                        return searchTerms.every(term => allItemString.includes(term));
+                    });
+                }
             }
 
             if (isSortFastestFirst) {
@@ -686,7 +720,7 @@
             });
 
             let completedCount = 0;
-            let pendingItems = [];
+            let lotCountsMap = {};
             const skuOptions = buildSkuOptions();
             const elementsToInit = [];
 
@@ -722,9 +756,6 @@
 
                 let dateStoreObj = realStoreObj || (dateArriveTHObj ? addDays(dateArriveTHObj, 4) : null);
                 const dateStoreText = dateStoreObj ? formatDate(dateStoreObj) : '-';
-                const storeDisplay = !realStoreObj && dateStoreObj 
-                    ? `<span style="color:#d97706;">${dateStoreText}</span> <span class="estimated-tag">(ประมาณ)</span>` 
-                    : `<strong style="color:#0284c7;">${dateStoreText}</strong>`;
 
                 let isArrivedAtStore = false;
                 if (dateStoreObj) {
@@ -735,11 +766,18 @@
                     }
                 }
 
+                const storeDisplay = !realStoreObj && dateStoreObj 
+                    ? `<span style="color:${isArrivedAtStore ? '#f8fafc' : '#d97706'};">${dateStoreText}</span> <span class="estimated-tag">(ประมาณ)</span>` 
+                    : `<strong style="color:${isArrivedAtStore ? '#f8fafc' : '#0284c7'};">${dateStoreText}</strong>`;
+
                 const cardId = `card-item-${index}`;
 
-                if (!realStoreObj || realStoreObj.getTime() > today.getTime()) {
-                    const shortDisplay = formatTrackingNo(baseTrack).display;
-                    pendingItems.push({ display: shortDisplay, cardId: cardId });
+                if (!isArrivedAtStore) {
+                    group.items.forEach(it => {
+                        const rawLot = it['ประเภทสินค้า/ล็อต'] || it['ประเภทสินค้า'] || '';
+                        const shortLot = getShortLotName(rawLot);
+                        lotCountsMap[shortLot] = (lotCountsMap[shortLot] || 0) + 1;
+                    });
                 }
 
                 let allSelectedSkus = [];
@@ -791,7 +829,7 @@
                 const trHtml = `
                     <td>
                         <div class="tracking-box">
-                            <span class="tracking-display" style="font-size:14px;">${displayBaseText} ${group.items.length > 1 ? `<small style="color:#64748b;">(${group.items.length} กล่อง)</small>` : ''}</span>
+                            <span class="tracking-display" style="font-size:14px;">${displayBaseText} ${group.items.length > 1 ? `<small>(${group.items.length} กล่อง)</small>` : ''}</span>
                             <button class="btn-icon-copy" onclick="openTrackingModal('${primaryTrackFull}')">คัดลอก</button>
                         </div>
                     </td>
@@ -823,7 +861,7 @@
                 const cardHtml = `
                     <div class="card-header">
                         <div class="tracking-box">
-                            <span class="tracking-display">${displayBaseText} ${group.items.length > 1 ? `<small style="color:#64748b;">(${group.items.length} กล่อง)</small>` : ''}</span>
+                            <span class="tracking-display">${displayBaseText} ${group.items.length > 1 ? `<small>(${group.items.length} กล่อง)</small>` : ''}</span>
                             <button class="btn-icon-copy" onclick="openTrackingModal('${primaryTrackFull}')">คัดลอก</button>
                         </div>
                         <div class="date-info">
@@ -886,16 +924,19 @@
                 elementsToInit.forEach(id => initTomSelect(id));
             });
 
-            if (pendingItems.length > 0) {
+            const lotKeys = Object.keys(lotCountsMap);
+            if (lotKeys.length > 0) {
                 quickBadgesSection.style.display = 'block';
-                pendingCountTag.innerText = `${pendingItems.length} รายการ`;
-                pendingItems.forEach(pItem => {
+                pendingCountTag.innerText = `${lotKeys.length} ล็อต`;
+                lotKeys.forEach(lotName => {
+                    const boxCount = lotCountsMap[lotName];
                     const badge = document.createElement('div');
                     badge.className = 'badge-item';
-                    badge.innerText = pItem.display;
+                    badge.innerText = `${lotName} (${boxCount})`;
+                    badge.title = `คลิกเพื่อดูรายการพัสดุใน ${lotName} ทั้งหมด`;
                     badge.onclick = () => {
-                        const target = document.getElementById(pItem.cardId);
-                        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        document.getElementById('searchInput').value = lotName;
+                        applyFilter();
                     };
                     quickBadgesGrid.appendChild(badge);
                 });
