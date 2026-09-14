@@ -56,11 +56,13 @@
         .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eaeaea; font-size: 12.5px; line-height: 1.5; transition: border-color 0.3s; scroll-margin-top: 90px; }
         
         .card-arrived { background-color: #334155 !important; color: #f8fafc !important; border: 1.5px solid #0f172a !important; }
-        .card-arrived summary, .card-arrived .tracking-display, .card-arrived .date-info, .card-arrived .date-row, .card-arrived .sku-item-name { color: #f8fafc !important; }
+        .card-arrived summary, .card-arrived .tracking-display, .card-arrived .date-info, .card-arrived .date-row { color: #f8fafc !important; }
+        .card-arrived .sku-item-name { color: #1e293b !important; }
         .card-arrived .btn-icon-copy { background-color: #475569 !important; color: #ffffff !important; border-color: #64748b !important; }
         .row-arrived { background-color: #334155 !important; color: #f8fafc !important; }
         .row-arrived td { border-bottom: 1px solid #475569 !important; color: #f8fafc !important; }
         .row-arrived summary, .row-arrived .tracking-display { color: #f8fafc !important; }
+        .row-arrived .sku-item-name { color: #1e293b !important; }
 
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
         
@@ -561,18 +563,15 @@
             return null;
         }
 
-        /* ฟังก์ชันตัดคำเฉพาะชื่อล็อต โดยแยกกรณีไม่มีเลข lot ชัดเจน */
         function getShortLotName(rawType) {
             if (!rawType) return "ทั่วไป";
             let str = String(rawType).trim();
             
-            // 1. ค้นหาแบบมีเลข lot เช่น "รถ lot18735" หรือ "lot18735"
             const matchLot = str.match(/(รถ\s*lot\d+|lot\d+)/i);
             if (matchLot) {
                 return matchLot[0].trim();
             }
 
-            // 2. ถ้ามีคำว่า "รถ" แต่ไม่มีเลข lot ตามหลัง
             if (/รถ/i.test(str)) {
                 return "รถ (รอระบุ lot)";
             }
@@ -612,7 +611,6 @@
 
             if (keyword) {
                 if (keyword === "รถ (รอระบุ lot)" || keyword === "รถรอระบุ") {
-                    // กรองเฉพาะพัสดุประเภท "รถ" ที่ยังไม่มีเลข lot
                     processedData = processedData.filter(item => {
                         const rawLot = String(item['ประเภทสินค้า/ล็อต'] || item['ประเภทสินค้า'] || '');
                         return /รถ/i.test(rawLot) && !/lot\d+/i.test(rawLot);
